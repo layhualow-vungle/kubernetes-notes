@@ -37,3 +37,39 @@ apt install kubeadm=1.12.0-00
 apt install kubelet=1.12.0-00
 kubeadm upgrade node config --kubelet-version $(kubelet --version | cut -d ' ' -f 2)
 ```
+# Backup
+## Resource Configs
+```
+kubectl get all --all-namespaces -o yaml > all-deploy-services.yaml
+```
+## etcd
+tar this directory
+```
+--data-dir=
+```
+or
+```
+ETCDCTL_API=3 etcdctl snapshot save snapshot.db
+ETCDCTL_API=3 etcdctl snapshot status snapshot.db
+```
+# Restore
+```
+service kube-apiserver stop
+ETCDCTL_API=3 etcdctl snapshot restore snapshot.db --datadir=
+```
+
+What is the version of ETCD running on the cluster?
+```
+kubectl logs etcd-master -n kube-system
+```
+or
+```
+kubectl describe pod etcd-master -n kube-system
+```
+https://github.com/mmumshad/kubernetes-the-hard-way/blob/master/practice-questions-answers/cluster-maintenance/backup-etcd/etcd-backup-and-restore.md
+
+```
+ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+     --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key \
+     snapshot save /tmp/snapshot-pre-boot.db
+```
